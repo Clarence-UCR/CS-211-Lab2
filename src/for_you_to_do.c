@@ -1,7 +1,5 @@
 #include "../include/for_you_to_do.h"
 
-
-
 /**
  * 
  * this function computes LU factorization
@@ -20,8 +18,7 @@
  * 
  **/
 
-
-int mydgetrf(double *A, int *ipiv, int n) 
+int mydgetrf(double *A, int *ipiv, int n)
 {
     /* add your code here */
     register int i, t, j, k, maxind, temps;
@@ -125,16 +122,52 @@ int mydgetrf(double *A, int *ipiv, int n)
 void mydtrsv(char UPLO, double *A, double *B, int n, int *ipiv)
 {
     /* add your code here */
+    register int i, j;
+    register double sum;
+    register double *y = (double *)malloc(n * sizeof(double));
+    if (UPLO == 'L')
+    {
+        //here we change LUx = B to Ly = B and Ux = y.
+        //And we calculate y firstly at here by using Ly = B
+        //L is the left matrix of A
+        y[0] = B[ipiv[0]];
+        for (i = 1; i < n; i++)
+        {
+            sum = 0;
+            for (j = 0; j < i; j++)
+            {
+                sum += y[j] * A[i * n + j];
+            }
+            y[i] = B[ipiv[i]] - sum;
+        }
+    }
+    else if (UPLO == 'U')
+    {
+        //here we use Ux = y to calculate x. however here y is B as we copy y to B in the previous step.
+        //U is the right matrix of A
+        y[n - 1] = B[n - 1] / A[(n - 1) * n + n - 1];
+        for (i = n - 2; i >= 0; i--)
+        {
+            sum = 0;
+            for (j = i + 1; j < n; j++)
+            {
+                sum += y[j] * A[i * n + j];
+            }
+            y[i] = (B[i] - sum) / A[i * n + i];
+        }
+    }
+
+    memcpy(B, y, sizeof(double) * n);
+    free(y);
     return;
 }
 
-
-int get_block_size(){
+int get_block_size()
+{
     //return the block size you use in your matrix multiplication code.
     /*add your code here, 128 is an example and can be modified. */
     // With the returned block size the test code will adaptively adjust the input sizes to avoid corner cases.
     return 128;
-  
 }
 
 //The matrix multiplication function used in blocked GEPP.
@@ -147,7 +180,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
     /* In fact this function won't be directly called in the tester code, so you can modify the declaration (parameter list) of mydgemm() if needed. 
     /* you may copy the code from the optimal() function or any of the other functions in your lab1 code (optimized code recommended).*/
     /* add your code here */
-    
+
     return;
 }
 
@@ -179,8 +212,7 @@ void mydgemm(double *A, double *B, double *C, int n, int i, int j, int k, int b)
  *      return  0 : return normally 
  * 
  **/
-int mydgetrf_block(double *A, int *ipiv, int n, int b) 
+int mydgetrf_block(double *A, int *ipiv, int n, int b)
 {
     return 0;
 }
-
