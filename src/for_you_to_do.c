@@ -24,6 +24,73 @@
 int mydgetrf(double *A, int *ipiv, int n) 
 {
     /* add your code here */
+    register int i, t, j, k, maxind, temps;
+    register double max;
+    register double *tempv = (double *)malloc(sizeof(double) * n);
+
+    for (i = 0; i < (n - 1); i++)
+    {
+        // we should pivoting first to prevent from 0 to cause data overflow
+        maxind = i;
+        max = fabs(A[i * n + i]);
+
+        for (t = i + 1; t < n; t++)
+        {
+            if (fabs(A[t * n + i]) > max)
+            {
+                maxind = t;
+                max = fabs(A[t * n + i]);
+            }
+        }
+
+        if (max == 0)
+        {
+            //if max is zero, which means this column is all 0, we should return -1 at this case
+            return -1;
+        }
+        else
+        {
+            if (maxind != i)
+            {
+                //swap the pivoting data to the top
+                temps = ipiv[i];
+                ipiv[i] = ipiv[maxind];
+                ipiv[maxind] = temps;
+
+                // swap pivoting row to the top
+                memcpy(tempv, A + i * n, n * sizeof(double));
+                memcpy(A + i * n, A + maxind * n, n * sizeof(double));
+                memcpy(A + maxind * n, tempv, n * sizeof(double));
+            }
+        }
+
+        // factorization
+        for (j = i + 1; j < n; j++)
+        {
+            //calculate the proportion and store to the first element
+            A[j * n + i] = A[j * n + i] / A[i * n + i];
+            for (k = i + 1; k < n; k++)
+            {
+                //use the proportion to calculate each element
+                A[j * n + k] -= A[j * n + i] * A[i * n + k];
+            }
+        }
+
+        //following is my code which is used to print the Guassian elimination
+        // int x;
+        // int y;
+        // for (y = 0; y < n; y++)
+        // {
+        //     for (x = 0; x < n; x++)
+        //     {
+        //         printf("%g ", A[y * n + x]);
+        //     }
+        //     printf("\n");
+        // }
+
+        // printf("\n");
+    }
+    free(tempv);
 
     return 0;
 }
